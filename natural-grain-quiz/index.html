@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FindYourGrain - Discover Your Mastery Path</title>
+  <link rel="icon" type="image/png" href="assets/favicon.ico">
+  <!-- PayPal SDK -->
+  <script src="https://www.paypal.com/sdk/js?client-id=AWMjw-JB6E8nFkjToPpNNJkpPk9lxnp1I8IF13-djVLcOQ2daRj2k8tCM4jEHkjm_C8mPpnyO1Wj_rF4&currency=USD&components=buttons,hosted-fields&disable-funding=venmo,credit"></script>
+
+  <style>
+    :root {
+      --primary: #2e7d32;
+      --secondary: #1b5e20;
+      --accent: #ffd700;
+      --bg: #f4f7f6;
+    }
+    
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      max-width: 700px; 
+      margin: 0 auto; 
+      padding: 20px; 
+      background: var(--bg); 
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+    }
+
+    h1 { text-align: center; color: var(--secondary); margin-bottom: 10px; }
+    
+    .quote {
+      font-style: italic;
+      text-align: center;
+      color: #666;
+      margin-bottom: 30px;
+      border-left: 4px solid var(--accent);
+      padding: 10px;
+      background: #fffdf0;
+    }
+
+    .header-img { 
+      width: 100%; 
+      height: 220px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-bottom: 25px;
+    }
+
+    .teaser-questions {
+      margin: 20px 0;
+      padding: 15px;
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #eee;
+    }
+
+    .btn-container { text-align: center; margin: 40px 0; }
+
+    button { 
+      padding: 16px 50px; 
+      background: var(--primary); 
+      color: white; 
+      border: none; 
+      border-radius: 50px; 
+      cursor: pointer; 
+      font-size: 19px; 
+      font-weight: bold;
+      transition: 0.3s;
+      box-shadow: 0 5px 18px rgba(46, 125, 50, 0.3);
+    }
+
+    button:hover { background: var(--secondary); transform: scale(1.05); }
+
+    #paywall-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .paywall-content {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      max-width: 420px;
+      text-align: center;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+    }
+
+    .footer { text-align: center; margin-top: 60px; font-size: 13px; color: #999; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h1>FindYourGrain</h1>
+    <div class="quote">
+      "You possess a kind of inner compass... You must choose the field that matches your own nature." — Robert Greene
+    </div>
+    
+    <img src="assets/brainF.png" alt="Brain Potential" class="header-img">
+
+    <p style="text-align: center; font-weight: bold;">
+      Struggling to find the right career direction?<br>
+      Take this free 5-min quiz to discover your natural strengths (inspired by Robert Greene)
+    </p>
+
+    <div class="teaser-questions">
+      <p style="font-weight: bold; text-align: center;">Quick teaser — how do these feel?</p>
+      <ul style="padding-left: 20px;">
+        <li>I enjoy telling stories or jokes.</li>
+        <li>I like solving puzzles or riddles.</li>
+        <li>I often have songs stuck in my head.</li>
+        <li>I am good at sports or physical activities.</li>
+      </ul>
+      <p style="text-align: center; color: var(--primary); font-style: italic;">
+        Answer 40 questions to reveal your dominant "Grain" + career paths...
+      </p>
+    </div>
+  </div>
+
+  <div class="btn-container">
+    <button id="start-btn">Start Quiz – Unlock for $3 </button>
+  </div>
+
+  <!-- Paywall Modal -->
+  <div id="paywall-modal">
+    <div class="paywall-content">
+      <h2>Unlock Full Quiz – $3</h2>
+      <p>One-time payment • Full access  • No subscription</p>
+      <p style="font-size:0.9rem; color:#777; margin:1.2rem 0;">
+       
+      </p>
+      <div id="paypal-button-container"></div>
+      <div style="margin-top:25px;">
+        <button onclick="document.getElementById('paywall-modal').style.display='none'" 
+                style="padding:14px 60px; font-size:1.1rem; background:#eee; border:none; border-radius:50px; cursor:pointer;">
+          BACK
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">Made with ❤️ in SA 🇿🇦</div>
+
+  <script>
+    const isPaid = localStorage.getItem('grainQuizPaid') === 'true';
+
+    if (isPaid) {
+      window.location.href = 'brain.html';
+    }
+
+    document.getElementById('start-btn').onclick = function() {
+      if (isPaid) {
+        window.location.href = 'brain.html';
+      } else {
+        document.getElementById('paywall-modal').style.display = 'flex';
+      }
+    };
+
+    // PayPal integration
+    paypal.Buttons({
+      createOrder: function(data, actions) {
+        return actions.order.create({
+          purchase_units: [{ amount: { value: '3.00' } }],
+          application_context: { shipping_preference: "NO_SHIPPING" }
+        });
+      },
+      onApprove: function(data, actions) {
+        return actions.order.capture().then(function(details) {
+          localStorage.setItem('grainQuizPaid', 'true');
+          alert('Payment successful! Redirecting to your full quiz...');
+          window.location.href = 'brain.html';
+        });
+      },
+      onError: function(err) {
+        console.error('PayPal error:', err);
+        alert('Payment issue — please try again or contact support.');
+      }
+    }).render('#paypal-button-container');
+
+    // Optional test bypass (comment out in production)
+    // localStorage.setItem('grainQuizPaid', 'true');
+  </script>
+</body>
+</html>

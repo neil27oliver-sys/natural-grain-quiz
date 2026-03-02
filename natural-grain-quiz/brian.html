@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FindYourGrain – Your Mastery Quiz</title>
+  <link rel="icon" type="image/png" href="assets/favicon.ico">
+
+  <style>
+    :root {
+      --primary: #2e7d32;
+      --secondary: #1b5e20;
+      --accent: #ffd700;
+      --bg: #f4f7f6;
+    }
+    
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      max-width: 700px; 
+      margin: 0 auto; 
+      padding: 20px; 
+      background: var(--bg); 
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+    }
+
+    h1 { text-align: center; color: var(--secondary); margin-bottom: 10px; }
+    
+    .quote {
+      font-style: italic;
+      text-align: center;
+      color: #666;
+      margin-bottom: 30px;
+      border-left: 4px solid var(--accent);
+      padding: 10px;
+      background: #fffdf0;
+    }
+
+    .header-img { 
+      width: 100%; 
+      height: 200px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-bottom: 25px;
+    }
+
+    .question { 
+      margin: 15px 0; 
+      padding: 20px; 
+      background: #fff; 
+      border: 1px solid #eee;
+      border-radius: 10px; 
+      transition: transform 0.2s;
+    }
+
+    .question:hover { transform: translateY(-2px); border-color: var(--primary); }
+    
+    .options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      max-width: 400px;
+    }
+
+    .option-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    input[type="radio"] { margin-top: 8px; cursor: pointer; width: 18px; height: 18px; }
+
+    .btn-container { text-align: center; margin-top: 40px; }
+
+    button { 
+      padding: 15px 35px; 
+      background: var(--primary); 
+      color: white; 
+      border: none; 
+      border-radius: 50px; 
+      cursor: pointer; 
+      font-size: 18px; 
+      font-weight: bold;
+      transition: 0.3s;
+      box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+    }
+
+    button:hover { background: var(--secondary); transform: scale(1.05); }
+    
+    .reset-btn {
+      background: transparent;
+      color: #888;
+      box-shadow: none;
+      font-size: 14px;
+      text-decoration: underline;
+    }
+    .reset-btn:hover { background: #eee; color: #333; }
+
+    #result { 
+      margin-top: 40px; 
+      padding: 30px; 
+      background: #ffffff; 
+      border-top: 8px solid var(--primary);
+      border-radius: 15px; 
+      display: none; 
+      box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
+
+    .result-score { color: var(--primary); font-weight: bold; }
+    .footer { text-align: center; margin-top: 50px; font-size: 12px; color: #aaa; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h1>FindYourGrain</h1>
+    <div class="quote">
+      "You possess a kind of inner compass... You must choose the field that matches your own nature." — Robert Greene
+    </div>
+    
+    <img src="brainF.png" alt="Brain Potential" class="header-img">
+
+    <p style="text-align: center;"><strong>1 = Not me at all &nbsp; | &nbsp; 5 = That's totally me</strong></p>
+  </div>
+
+  <form id="quizForm">
+    <div id="questionsContainer"></div>
+
+    <div class="btn-container">
+      <button type="button" onclick="calculateResults()">Reveal My Nature</button>
+      <br><br>
+      <button type="button" class="reset-btn" onclick="location.reload()">Reset Quiz</button>
+    </div>
+  </form>
+
+  <div id="result">
+    <h2 style="margin-top:0;">Your Dominant Grain</h2>
+    <div id="output"></div>
+    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+    <p style="font-size: 14px; color: #666;">Remember: Mastery takes time. Your "grain" is the path where work feels like play.</p>
+    <p class="footer">Made with ❤️ in SA 🇿🇦</p>
+  </div>
+
+  <script>
+    // Quick paid check (redirect if not paid)
+    if (localStorage.getItem('grainQuizPaid') !== 'true') {
+      alert("Please complete payment on the main page first.");
+      window.location.href = 'index.html';
+    }
+
+    const questions = [
+      { q: "I enjoy telling stories or jokes.", cat: "word" },
+      { q: "I like reading books or stories.", cat: "word" },
+      { q: "I use a big vocabulary and find the right words easily.", cat: "word" },
+      { q: "I enjoy word games like crosswords or Scrabble.", cat: "word" },
+      { q: "I remember quotes or sayings word-for-word.", cat: "word" },
+      
+      { q: "I like solving puzzles or riddles.", cat: "logic" },
+      { q: "Numbers and maths come easy to me.", cat: "logic" },
+      { q: "I enjoy logic games like Sudoku or chess.", cat: "logic" },
+      { q: "I like figuring out how things work or why.", cat: "logic" },
+      { q: "I am good at planning and organising things.", cat: "logic" },
+
+      { q: "I often have songs stuck in my head.", cat: "music" },
+      { q: "Music is very important in my life.", cat: "music" },
+      { q: "I can sing in tune or play an instrument.", cat: "music" },
+      { q: "I enjoy different kinds of music.", cat: "music" },
+      { q: "I tap rhythms or make up tunes.", cat: "music" },
+
+      { q: "I am good at sports or physical activities.", cat: "body" },
+      { q: "I like making or building things with my hands.", cat: "body" },
+      { q: "I learn best by doing, not just watching.", cat: "body" },
+      { q: "I have good coordination (dancing, throwing).", cat: "body" },
+      { q: "I enjoy hands-on work like fixing or crafting.", cat: "body" },
+
+      { q: "I like drawing, painting, or doodling.", cat: "picture" },
+      { q: "I can picture things in my mind clearly.", cat: "picture" },
+      { q: "I read maps or find my way easily.", cat: "picture" },
+      { q: "I enjoy looking at art or photos.", cat: "picture" },
+      { q: "I like designing or arranging things.", cat: "picture" },
+
+      { q: "I make friends easily and like being with people.", cat: "people" },
+      { q: "I can tell how others are feeling.", cat: "people" },
+      { q: "I am good at listening and helping friends.", cat: "people" },
+      { q: "I enjoy team work or group activities.", cat: "people" },
+      { q: "People come to me for advice.", cat: "people" },
+
+      { q: "I like spending time alone thinking.", cat: "self" },
+      { q: "I know my own strengths and weaknesses.", cat: "self" },
+      { q: "I set goals for myself.", cat: "self" },
+      { q: "I understand my feelings well.", cat: "self" },
+      { q: "I enjoy journaling or reflecting.", cat: "self" },
+
+      { q: "I love being outdoors in nature.", cat: "nature" },
+      { q: "I notice plants, animals, or weather details.", cat: "nature" },
+      { q: "I care about the environment.", cat: "nature" },
+      { q: "I enjoy gardening or animals.", cat: "nature" },
+      { q: "I can identify different birds/plants easily.", cat: "nature" }
+    ];
+
+    const container = document.getElementById('questionsContainer');
+    questions.forEach((item, index) => {
+      const div = document.createElement('div');
+      div.className = 'question';
+      div.innerHTML = `
+        <p><strong>${index + 1}.</strong> ${item.q}</p>
+        <div class="options">
+          ${[1,2,3,4,5].map(num => `
+            <label class="option-label">
+              ${num}
+              <input type="radio" name="q${index}" value="${num}">
+            </label>
+          `).join('')}
+        </div>
+      `;
+      container.appendChild(div);
+    });
+
+    function calculateResults() {
+      const categoryScores = {
+        "Word Smarts": 0, "Logic Smarts": 0, "Music Smarts": 0, 
+        "Body Smarts": 0, "Visual Smarts": 0, "People Smarts": 0, 
+        "Self Smarts": 0, "Nature Smarts": 0
+      };
+
+      const catMap = ["Word Smarts", "Logic Smarts", "Music Smarts", "Body Smarts", "Visual Smarts", "People Smarts", "Self Smarts", "Nature Smarts"];
+
+      for (let i = 0; i < questions.length; i++) {
+        const val = document.querySelector(`input[name="q${i}"]:checked`)?.value;
+        if (!val) {
+          alert("Please answer all questions before submitting!");
+          return;
+        }
+        const catIndex = Math.floor(i / 5);
+        categoryScores[catMap[catIndex]] += parseInt(val);
+      }
+
+      const sorted = Object.entries(categoryScores).sort((a, b) => b[1] - a[1]);
+      const top = sorted[0];
+      const second = sorted[1];
+
+      const careerRecs = {
+        "Word Smarts": "Writer, Lawyer, Teacher, Journalist, Copywriter.",
+        "Logic Smarts": "Engineer, Programmer, Scientist, Accountant, Strategist.",
+        "Music Smarts": "Producer, Musician, Sound Designer, Editor.",
+        "Body Smarts": "Chef, Surgeon, Athlete, Craftsperson, Mechanic.",
+        "Visual Smarts": "Architect, Designer, Artist, Photographer, Pilot.",
+        "People Smarts": "Sales, Counselor, Manager, HR, Public Relations.",
+        "Self Smarts": "Entrepreneur, Philosopher, Researcher, Coach.",
+        "Nature Smarts": "Farmer, Vet, Geologist, Conservationist, Landscaper."
+      };
+
+      let html = `
+        <p style="font-size:1.2rem;">Your primary grain is <span class="result-score">${top[0]}</span>.</p>
+        <p>Greene suggests that your inclination towards this area is the source of your future <strong>Mastery</strong>.</p>
+        <p><strong>Top Career Paths:</strong> ${careerRecs[top[0]]}</p>
+        <p><strong>Secondary Strength:</strong> ${second[0]} (${second[1]}/25)</p>
+      `;
+
+      document.getElementById('output').innerHTML = html;
+      document.getElementById('result').style.display = 'block';
+      document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>
