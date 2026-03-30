@@ -81,12 +81,13 @@
 
     #paywall-modal {
       display: none;
+      justify-content: center;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.6);
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
+      background: rgba(0,0,0,0.88);
+      z-index: 2000;
+      overflow-y: auto; /* ← FIX: allows scrolling if content too tall */
+      padding: 20px;
     }
 
     .paywall-content {
@@ -155,15 +156,17 @@
   <div class="footer">Made with ❤️ in SA 🇿🇦</div>
 
   <script>
+    // 1. Consistently check for 'StoriesPaid'
     const isPaid = localStorage.getItem('grainQuizPaid') === 'true';
 
+    // 2. If already paid, send them straight to the stories
     if (isPaid) {
-      window.location.href = 'brain.html';
+      window.location.href = 'brian.html';
     }
 
     document.getElementById('start-btn').onclick = function() {
-      if (isPaid) {
-        window.location.href = 'brain.html';
+      if (localStorage.getItem('grainQuizPaid') === 'true') {
+        window.location.href = 'brian.html';
       } else {
         document.getElementById('paywall-modal').style.display = 'flex';
       }
@@ -179,9 +182,10 @@
       },
       onApprove: function(data, actions) {
         return actions.order.capture().then(function(details) {
+          // 3. Save the exact same key name here
           localStorage.setItem('grainQuizPaid', 'true');
-          alert('Payment successful! Redirecting to your full quiz...');
-          window.location.href = 'brain.html';
+          alert('Payment successful! Redirecting to GrainQuiz.');
+          window.location.href = 'brian.html';
         });
       },
       onError: function(err) {
@@ -189,9 +193,6 @@
         alert('Payment issue — please try again or contact support.');
       }
     }).render('#paypal-button-container');
-
-    // Optional test bypass (comment out in production)
-    // localStorage.setItem('grainQuizPaid', 'true');
   </script>
 </body>
 </html>
